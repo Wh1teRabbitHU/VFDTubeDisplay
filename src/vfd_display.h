@@ -67,8 +67,8 @@ const uint8_t VFD_digitMap[14] = {
 };
 
 void VFD_init();
-void VFD_setDigit(uint8_t digit, uint8_t value);
-uint8_t VFD_getDigit(uint8_t digit);
+void VFD_setDigit(uint8_t digit, int8_t value);
+int8_t VFD_getDigit(uint8_t digit);
 void VFD_refreshDisplayTask(void * pvParameters);
 
 #endif

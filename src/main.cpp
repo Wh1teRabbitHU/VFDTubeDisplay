@@ -38,9 +38,12 @@ void mainTaskImpl(void * pvParameters) {
 	Serial.println(xPortGetCoreID());
 
 	while (true) {
-		for (uint8_t i = 0; i < VFD_DIGIT_COUNT; i++) VFD_setDigit(i, numberCounter);
+		for (uint8_t i = 0; i < VFD_DIGIT_COUNT; i++) {
+			VFD_setDigit(i, i == digitCounter ? numberCounter : -1);
+		}
 
 		if (++numberCounter > 9) numberCounter = 0;
+		if (++digitCounter > 12) digitCounter = 0;
 
 		delay(1000);
 	}

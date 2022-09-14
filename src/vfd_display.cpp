@@ -31,7 +31,13 @@ void VFD_setOutput(uint32_t outputValue) {
 	digitalWrite(VFD_LOAD_PIN, LOW);
 }
 
-void VFD_showDigit(uint8_t digit, uint8_t value) {
+void VFD_showDigit(uint8_t digit, int8_t value) {
+	if (value == -1) {
+		VFD_setOutput(0); // To keep the same brightness, we need to have teh same amount of blank delays every time
+
+		return;
+	}
+
 	uint32_t outputValue = VFD_segmentMap[value];
 
 	outputValue = VFD_setBinary(outputValue, VFD_digitMap[digit], 1);
@@ -43,15 +49,15 @@ void VFD_init() {
 	lock = xSemaphoreCreateMutex();
 }
 
-void VFD_setDigit(uint8_t digit, uint8_t value) {
+void VFD_setDigit(uint8_t digit, int8_t value) {
 	xSemaphoreTake(lock, portMAX_DELAY);
 	displayDigits[digit] = value;
 	xSemaphoreGive(lock);
 }
 
-uint8_t VFD_getDigit(uint8_t digit) {
+int8_t VFD_getDigit(uint8_t digit) {
 	xSemaphoreTake(lock, portMAX_DELAY);
-	uint8_t value = displayDigits[digit];
+	int8_t value = displayDigits[digit];
 	xSemaphoreGive(lock);
 
 	return value;
