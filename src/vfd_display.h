@@ -39,6 +39,8 @@
 #define SEG_G_M		15
 #define SEG_P		11
 
+#define VFD_DIGIT_COUNT		13
+
 //  AAA
 // F   B
 // F   B
@@ -64,7 +66,9 @@ const uint8_t VFD_digitMap[14] = {
 	GRID_01, GRID_02, GRID_03, GRID_04, GRID_05, GRID_06, GRID_07, GRID_08, GRID_09, GRID_10, GRID_11, GRID_12, GRID_13, GRID_14
 };
 
-void VFD_setOutput(uint32_t outputValue);
-void VFD_showDigit(uint8_t digit, uint8_t value);
+void VFD_init();
+void VFD_setDigit(uint8_t digit, uint8_t value);
+uint8_t VFD_getDigit(uint8_t digit);
+void VFD_refreshDisplayTask(void * pvParameters);
 
 #endif

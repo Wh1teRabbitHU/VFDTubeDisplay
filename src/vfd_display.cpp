@@ -1,5 +1,8 @@
 #include "vfd_display.h"
 
+static SemaphoreHandle_t lock;
+static int8_t displayDigits[VFD_DIGIT_COUNT] = { -1 };
+
 uint32_t VFD_setBinary(uint32_t binary, uint8_t pos, uint8_t flagVal) {
 	if (flagVal == 1) {
 		return binary | (1 << pos);
@@ -34,4 +37,31 @@ void VFD_showDigit(uint8_t digit, uint8_t value) {
 	outputValue = VFD_setBinary(outputValue, VFD_digitMap[digit], 1);
 
 	VFD_setOutput(outputValue);
+}
+
+void VFD_init() {
+	lock = xSemaphoreCreateMutex();
+}
+
+void VFD_setDigit(uint8_t digit, uint8_t value) {
+	xSemaphoreTake(lock, portMAX_DELAY);
+	displayDigits[digit] = value;
+	xSemaphoreGive(lock);
+}
+
+uint8_t VFD_getDigit(uint8_t digit) {
+	xSemaphoreTake(lock, portMAX_DELAY);
+	uint8_t value = displayDigits[digit];
+	xSemaphoreGive(lock);
+
+	return value;
+}
+
+void VFD_refreshDisplayTask(void * pvParameters) {
+	while (true) {
+		for (uint8_t i = 0; i < VFD_DIGIT_COUNT; i++) {
+			VFD_showDigit(i, VFD_getDigit(i));
+			delayMicroseconds(500);
+		}
+	}
 }

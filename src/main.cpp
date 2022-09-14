@@ -6,6 +6,11 @@ uint8_t ledStatus = 0;
 uint8_t numberCounter = 0;
 uint8_t digitCounter = 0;
 
+TaskHandle_t mainTask;
+TaskHandle_t handleDisplayTask;
+
+void initTasks();
+
 void setup() {
 	Serial.begin(115200);
 
@@ -23,19 +28,31 @@ void setup() {
 	digitalWrite(VFD_DIN_PIN, LOW);
 	digitalWrite(VFD_CLK_PIN, LOW);
 	digitalWrite(VFD_BLANK_PIN, LOW);
+
+	VFD_init();
+	initTasks();
 }
 
-uint32_t setBinary(uint32_t binary, uint8_t pos, uint8_t flagVal) {
-	if (flagVal == 1) {
-		return binary | (1 << pos);
-	}
+void mainTaskImpl(void * pvParameters) {
+	Serial.print("Task1 running on core ");
+	Serial.println(xPortGetCoreID());
 
-	return binary & (~(1 << pos));
+	while (true) {
+		for (uint8_t i = 0; i < VFD_DIGIT_COUNT; i++) VFD_setDigit(i, numberCounter);
+
+		if (++numberCounter > 9) numberCounter = 0;
+
+		delay(1000);
+	}
 }
 
 void loop() {
-	for (uint8_t i = 0; i < 13; i++) {
-		VFD_showDigit(i, i%10);
-		delayMicroseconds(500);
-	}
+	delay(100);
+}
+
+void initTasks() {
+	xTaskCreatePinnedToCore(mainTaskImpl, "mainTask", 10000, NULL, 1, &mainTask, 0);
+	delay(500);
+	xTaskCreatePinnedToCore(VFD_refreshDisplayTask, "handleDisplayTask", 10000, NULL, 2, &handleDisplayTask, 1);
+    delay(500);
 }
