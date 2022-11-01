@@ -1,18 +1,21 @@
 #include <Arduino.h>
 #include "gpio_conf.h"
 #include "vfd_display.h"
+#include "wifi_adapter.h"
 
 uint8_t ledStatus = 0;
-uint8_t numberCounter = 0;
-uint8_t digitCounter = 0;
 
 TaskHandle_t mainTask;
 TaskHandle_t handleDisplayTask;
+
+BTC_rate rate;
 
 void initTasks();
 
 void setup() {
 	Serial.begin(115200);
+
+	wifi_connectToRouter();
 
 	pinMode(LED_01_PIN, OUTPUT);
 	pinMode(LED_02_PIN, OUTPUT);
@@ -34,16 +37,9 @@ void setup() {
 }
 
 void mainTaskImpl(void * pvParameters) {
-	Serial.print("Task1 running on core ");
-	Serial.println(xPortGetCoreID());
-
 	while (true) {
-		for (uint8_t i = 0; i < VFD_DIGIT_COUNT; i++) {
-			VFD_setDigit(i, i == digitCounter ? numberCounter : -1);
-		}
-
-		if (++numberCounter > 9) numberCounter = 0;
-		if (++digitCounter > 12) digitCounter = 0;
+		wifi_fetchBtcRate(&rate);
+		VFD_showBtcRate(&rate);
 
 		delay(1000);
 	}
